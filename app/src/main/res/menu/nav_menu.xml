@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_camera"
+            android:title="Camera"
+            android:icon="@drawable/ic_camera">
+        </item>
+        <item
+            android:id="@+id/nav_storage"
+            android:title="Storage"
+            android:icon="@drawable/ic_storage">
+        </item>
+        <item
+            android:id="@+id/nav_draw"
+            android:title="Drawing"
+            android:icon="@drawable/ic_draw">
+        </item>
+
+    </group>
+
+    <item
+        android:title="More">
+        <menu>
+            <item
+                android:id="@+id/nav_about"
+                android:title="About"
+                android:icon="@drawable/ic_about">
+            </item>
+        </menu>
+    </item>
+
+</menu>
