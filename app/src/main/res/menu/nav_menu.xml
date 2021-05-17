@@ -6,28 +6,28 @@
         android:checkableBehavior="single">
         <item
             android:id="@+id/nav_camera"
-            android:title="Camera"
+            android:title="@string/nav_camera"
             android:icon="@drawable/ic_camera">
         </item>
         <item
             android:id="@+id/nav_storage"
-            android:title="Storage"
+            android:title="@string/nav_storage"
             android:icon="@drawable/ic_storage">
         </item>
         <item
             android:id="@+id/nav_draw"
-            android:title="Drawing"
+            android:title="@string/nav_drawing"
             android:icon="@drawable/ic_draw">
         </item>
 
     </group>
 
     <item
-        android:title="More">
+        android:title="@string/nav_more">
         <menu>
             <item
                 android:id="@+id/nav_about"
-                android:title="About"
+                android:title="@string/nav_about"
                 android:icon="@drawable/ic_about">
             </item>
         </menu>

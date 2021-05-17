@@ -3,6 +3,8 @@ package com.example.photodrawer
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
@@ -24,6 +26,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.photodrawer.Constants.REQUEST_CAMERA_PERMISSION
+import com.example.photodrawer.extension.rotate
+import com.example.photodrawer.extension.writeBitmap
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -206,7 +210,9 @@ class CameraSession(
                                 val buffer: ByteBuffer = image.planes[0].buffer
                                 val bytes = ByteArray(buffer.capacity())
                                 buffer.get(bytes)
-                                save(bytes)
+                                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                    .rotate(ORIENTATIONS.get(activity.windowManager.defaultDisplay.rotation).toFloat())
+                                saveBitmap(bitmap)
                             } catch (e: FileNotFoundException) {
                                 Log.e(this@CameraSession.javaClass.simpleName, e.message, e)
                             } catch (e: IOException) {
@@ -216,10 +222,8 @@ class CameraSession(
                             }
                         }
 
-                        private fun save(bytes: ByteArray) {
-                            FileOutputStream(file).use {
-                                it.write(bytes)
-                            }
+                        private fun saveBitmap(bitmap: Bitmap) {
+                            file.writeBitmap(bitmap, Bitmap.CompressFormat.JPEG, 85)
                         }
                     }
                 reader.setOnImageAvailableListener(readerListener, backgroundHandler)

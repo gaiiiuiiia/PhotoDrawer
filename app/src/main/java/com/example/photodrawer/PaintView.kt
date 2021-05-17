@@ -1,13 +1,10 @@
 package com.example.photodrawer
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import com.example.photodrawer.extension.rotate
-import java.io.File
 import java.util.*
 import kotlin.math.abs
 
@@ -19,13 +16,15 @@ class PaintView (
     private var mX = 0f
     private var mY = 0f
     private var mPath: Path? = null
-    private val mPaint: Paint = Paint()
+    private val paint: Paint = Paint()
     private val paths = ArrayList<FingerPath>()
-    private lateinit var mBitmap: Bitmap
-    private val mBitmapPaint = Paint(Paint.DITHER_FLAG)
+    private lateinit var bitmap: Bitmap
+    private val bitmapPaint = Paint(Paint.DITHER_FLAG)
     private var strokeWidth = BRUSH_SIZE
-    private var currentColor = DEFAULT_BG_COLOR
-    private var mDestRect: Rect? = null
+    private var currentColor = DEFAULT_COLOR
+    private var bgColor = DEFAULT_BG_COLOR
+    private var destRect: Rect? = null
+    private var isBitmapCreated = false
 
     companion object
     {
@@ -35,49 +34,61 @@ class PaintView (
         private const val TOUCH_TOLERANCE = 4f
     }
 
-    init
+    /**
+     * Для того, чтобы корректно получить размеры области, так как во время инициализции, ее размеры равын нулю
+     */
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int)
     {
-        mPaint.isAntiAlias = true
-        mPaint.isDither = true
-        mPaint.color = DEFAULT_COLOR
-        mPaint.style = Paint.Style.STROKE
-        mPaint.strokeJoin = Paint.Join.ROUND
-        mPaint.strokeCap = Paint.Cap.ROUND
-        mPaint.xfermode = null
-        mPaint.alpha = 0xff
+        super.onSizeChanged(w, h, oldw, oldh)
+        if (!isBitmapCreated && w > 0 && h > 0) {
+            bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            isBitmapCreated = true
+        }
     }
 
-    fun init(surface: PaintView, activity: Activity? = null, fileName: String? = null)
+    init
     {
-        mBitmap = if (fileName != null){
+        paint.isAntiAlias = true
+        paint.isDither = true
+        paint.color = DEFAULT_COLOR
+        paint.style = Paint.Style.STROKE
+        paint.strokeJoin = Paint.Join.ROUND
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.xfermode = null
+        paint.alpha = 0xff
+    }
+
+    fun init(fileName: String? = null)
+    {
+        if (fileName != null) {
             val options = BitmapFactory.Options()
             options.inMutable = true
-            mBitmap = BitmapFactory.decodeFile(fileName, options)
-
-            if (activity != null) {
-                mBitmap = mBitmap.rotate(CameraSession.ORIENTATIONS.get(activity.windowManager.defaultDisplay.rotation).toFloat())
-            }
-            mBitmap
+            bitmap = BitmapFactory.decodeFile(fileName, options)
+            isBitmapCreated = true
         } else {
-            Bitmap.createBitmap(surface.width, surface.height, Bitmap.Config.ARGB_8888)
+            if (width > 0 && height > 0) {
+                bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                isBitmapCreated = true
+            }
         }
-        mDestRect = Rect(0, 0, width, height)
+        destRect = Rect(0, 0, width, height)
     }
 
     override fun onDraw(canvas: Canvas)
     {
         canvas.save()
-        mDestRect?.apply {
+        destRect?.apply {
             right = width
             bottom = height
         }
-        mDestRect?.let {
-            canvas.drawBitmap(mBitmap, null, it, mBitmapPaint)
+        destRect?.let {
+            canvas.drawColor(bgColor)
+            canvas.drawBitmap(bitmap, null, it, bitmapPaint)
         }
         for (fp in paths) {
-            mPaint.color = fp.color
-            mPaint.strokeWidth = fp.strokeWidth.toFloat()
-            canvas.drawPath(fp.path, mPaint)
+            paint.color = fp.color
+            paint.strokeWidth = fp.strokeWidth.toFloat()
+            canvas.drawPath(fp.path, paint)
         }
         canvas.restore()
     }

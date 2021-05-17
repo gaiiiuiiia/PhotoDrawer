@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PhotoDrawer</string>
+    <string name="camera_not_allowed">Камера не доступна</string>
+    <string name="saved_success">Сохранено</string>
+    <string name="nav_camera">Камера</string>
+    <string name="nav_storage">Хранилище</string>
+    <string name="nav_drawing">Редактор</string>
+    <string name="nav_more">Дополнительно</string>
+    <string name="nav_about">О приложении</string>
+</resources>

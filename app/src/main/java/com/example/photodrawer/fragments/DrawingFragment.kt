@@ -1,17 +1,24 @@
 package com.example.photodrawer.fragments
 
 import android.app.Activity
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.icu.text.SimpleDateFormat
+import android.icu.util.Calendar
 import android.os.Bundle
 import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.photodrawer.FileProvider
 import com.example.photodrawer.PaintView
 import com.example.photodrawer.R
+import com.example.photodrawer.extension.writeBitmap
 import java.io.File
+import java.util.*
 
 class DrawingFragment(
     private val act: Activity,
@@ -42,17 +49,44 @@ class DrawingFragment(
         super.onViewCreated(view, savedInstanceState)
 
         if (filePicture != null) {
-            paintView.init(paintView, activity, filePicture.absolutePath)
+            paintView.init(filePicture.absolutePath)
         } else {
             val lastPicture: File? = getLastPicture()
 
             if (lastPicture != null) {
-                paintView.init(paintView, activity, lastPicture.absolutePath)
+                paintView.init(lastPicture.absolutePath)
             } else {
-                paintView.init(paintView)
+                paintView.init()
             }
         }
+
+        btnBack.setOnClickListener {
+            act.onBackPressed()
+        }
+
+        btnSave.setOnClickListener {
+
+            val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy-hh-mm-ss", Locale.getDefault())
+            val name = "/" + simpleDateFormat.format(Calendar.getInstance().time) + "PhotoDrawer" + ".jpg"
+            val file = File(
+                act.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString(),
+                name
+            )
+
+            file.writeBitmap(viewToBitmap(paintView), Bitmap.CompressFormat.JPEG, 85)
+            
+            Toast.makeText(context, R.string.saved_success, Toast.LENGTH_SHORT).show()
+        }
     }
+
+    private fun viewToBitmap(view: View): Bitmap
+    {
+        val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        view.draw(canvas)
+        return bitmap
+    }
+
 
     private fun getLastPicture(): File?
     {

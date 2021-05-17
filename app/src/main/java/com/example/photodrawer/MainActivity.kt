@@ -102,10 +102,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onBackPressed()
     {
+        supportFragmentManager.popBackStackImmediate()
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            supportFragmentManager.popBackStackImmediate()
             super.onBackPressed()
         }
     }

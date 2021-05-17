@@ -1,6 +1,12 @@
 <resources>
     <string name="app_name">PhotoDrawer</string>
-    <string name="Open_Drawer">Open Navigation Drawer</string>
-    <string name="Close_Drawer">Close Navigation Drawer</string>
+    <string name="Open_Drawer" translatable="false">Open Navigation Drawer</string>
+    <string name="Close_Drawer" translatable="false">Close Navigation Drawer</string>
     <string name="camera_not_allowed">Camera not allowed</string>
+    <string name="saved_success">saved success!</string>
+    <string name="nav_camera">Camera</string>
+    <string name="nav_storage">Storage</string>
+    <string name="nav_drawing">Drawing</string>
+    <string name="nav_more">More</string>
+    <string name="nav_about">About</string>
 </resources>
