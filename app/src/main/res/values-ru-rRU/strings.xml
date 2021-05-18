@@ -8,4 +8,5 @@
     <string name="nav_drawing">Редактор</string>
     <string name="nav_more">Дополнительно</string>
     <string name="nav_about">О приложении</string>
+    <string name="drawing_on_blank">Изображения не найдены</string>
 </resources>

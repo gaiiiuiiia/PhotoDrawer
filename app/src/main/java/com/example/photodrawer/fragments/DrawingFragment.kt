@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import com.example.photodrawer.FileProvider
 import com.example.photodrawer.PaintView
 import com.example.photodrawer.R
+import com.example.photodrawer.UndoRedoListener
 import com.example.photodrawer.extension.writeBitmap
 import java.io.File
 import java.util.*
@@ -23,12 +24,14 @@ import java.util.*
 class DrawingFragment(
     private val act: Activity,
     private val filePicture: File? = null
-): Fragment()
+): Fragment(), UndoRedoListener
 {
     private lateinit var myView: View
     private lateinit var paintView: PaintView
     private lateinit var btnBack: Button
     private lateinit var btnSave: Button
+    private lateinit var btnUndo: Button
+    private lateinit var btnRedo: Button
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +43,8 @@ class DrawingFragment(
         paintView = myView.findViewById(R.id.paintView)
         btnBack = myView.findViewById(R.id.btn_back)
         btnSave = myView.findViewById(R.id.btn_save)
+        btnUndo = myView.findViewById(R.id.btn_undo)
+        btnRedo = myView.findViewById(R.id.btn_redo)
 
         return myView
     }
@@ -57,8 +62,11 @@ class DrawingFragment(
                 paintView.init(lastPicture.absolutePath)
             } else {
                 paintView.init()
+                Toast.makeText(context, R.string.drawing_on_blank, Toast.LENGTH_SHORT).show()
             }
         }
+
+        paintView.setListener(this)
 
         btnBack.setOnClickListener {
             act.onBackPressed()
@@ -77,6 +85,14 @@ class DrawingFragment(
             
             Toast.makeText(context, R.string.saved_success, Toast.LENGTH_SHORT).show()
         }
+
+        btnUndo.setOnClickListener {
+            paintView.undo()
+        }
+
+        btnRedo.setOnClickListener {
+            paintView.redo()
+        }
     }
 
     private fun viewToBitmap(view: View): Bitmap
@@ -86,7 +102,6 @@ class DrawingFragment(
         view.draw(canvas)
         return bitmap
     }
-
 
     private fun getLastPicture(): File?
     {
@@ -99,5 +114,18 @@ class DrawingFragment(
         }
 
         return null
+    }
+
+    /** map должен содержать ключи "undoable" и "redoable"!!! */
+    override fun simpleUndoRedoNotify(map: Map<String, Boolean>)
+    {
+        if (map.containsKey("undoable")) {
+            btnUndo.isClickable = map["undoable"]!!
+            btnUndo.visibility = if (map["undoable"] == true) View.VISIBLE else View.INVISIBLE
+        }
+        if (map.containsKey("redoable")) {
+            btnRedo.isClickable = map["redoable"]!!
+            btnRedo.visibility = if (map["redoable"] == true) View.VISIBLE else View.INVISIBLE
+        }
     }
 }

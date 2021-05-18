@@ -57,8 +57,8 @@ class StorageFragment(
         var storage = File(activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString())
 
         arguments?.let {
-            if (arguments.getString("path") != null) {
-                storage = File(arguments.getString("path"))
+            if (arguments.containsKey(Constants.STORAGE_PATH)) {
+                storage = File(arguments.getString(Constants.STORAGE_PATH)!!)
             }
         }
 
@@ -98,7 +98,7 @@ class StorageFragment(
     {
         if (file.isDirectory) {
             val bundle = Bundle()
-            bundle.putString("path", file.absolutePath)
+            bundle.putString(Constants.STORAGE_PATH, file.absolutePath)
             val storageFragment = StorageFragment(act)
             storageFragment.arguments = bundle
             fragmentManager!!

@@ -5,7 +5,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.abs
 
 class PaintView (
@@ -15,9 +15,10 @@ class PaintView (
 {
     private var mX = 0f
     private var mY = 0f
-    private var mPath: Path? = null
+    private var path: Path? = null
     private val paint: Paint = Paint()
     private val paths = ArrayList<FingerPath>()
+    private val stash = ArrayList<FingerPath>()
     private lateinit var bitmap: Bitmap
     private val bitmapPaint = Paint(Paint.DITHER_FLAG)
     private var strokeWidth = BRUSH_SIZE
@@ -25,6 +26,9 @@ class PaintView (
     private var bgColor = DEFAULT_BG_COLOR
     private var destRect: Rect? = null
     private var isBitmapCreated = false
+
+    /** прослушивает события кнопок Undo и Redo */
+    private var undoRedoListener: UndoRedoListener? = null
 
     companion object
     {
@@ -74,6 +78,51 @@ class PaintView (
         destRect = Rect(0, 0, width, height)
     }
 
+    fun setListener(listener: UndoRedoListener)
+    {
+        undoRedoListener = listener
+    }
+
+    private fun notifyListener()
+    {
+        undoRedoListener?.simpleUndoRedoNotify(mapOf(
+            "undoable" to (paths.size > 0),
+            "redoable" to (stash.size > 0),
+        ))
+    }
+
+    fun getPaths(): ArrayList<FingerPath>
+    {
+        return paths
+    }
+
+    fun getStash(): ArrayList<FingerPath>
+    {
+        return stash
+    }
+
+    fun undo()
+    {
+        if (paths.size > 0) {
+            val lastElem = paths.last()
+            stash.add(lastElem)
+            paths.remove(lastElem)
+
+            invalidate()
+        }
+    }
+
+    fun redo()
+    {
+        if (stash.size > 0) {
+            val lastElem = stash.last()
+            paths.add(lastElem)
+            stash.remove(lastElem)
+
+            invalidate()
+        }
+    }
+
     override fun onDraw(canvas: Canvas)
     {
         canvas.save()
@@ -91,34 +140,7 @@ class PaintView (
             canvas.drawPath(fp.path, paint)
         }
         canvas.restore()
-    }
-
-    private fun touchStart(x: Float, y: Float)
-    {
-        mPath = Path()
-        mPath?.let {
-            paths.add(FingerPath(currentColor, strokeWidth, it))
-            it.reset()
-            it.moveTo(x, y)
-            mX = x
-            mY = y
-        }
-    }
-
-    private fun touchMove(x: Float, y: Float)
-    {
-        val dx = abs(x - mX)
-        val dy = abs(y - mY)
-        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-            mPath!!.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2)
-            mX = x
-            mY = y
-        }
-    }
-
-    private fun touchUp()
-    {
-        mPath!!.lineTo(mX, mY)
+        notifyListener()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean
@@ -138,5 +160,33 @@ class PaintView (
         }
         invalidate()
         return true
+    }
+
+    private fun touchStart(x: Float, y: Float)
+    {
+        path = Path()
+        path?.let {
+            paths.add(FingerPath(currentColor, strokeWidth, it))
+            it.reset()
+            it.moveTo(x, y)
+            mX = x
+            mY = y
+        }
+    }
+
+    private fun touchMove(x: Float, y: Float)
+    {
+        val dx = abs(x - mX)
+        val dy = abs(y - mY)
+        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+            path!!.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2)
+            mX = x
+            mY = y
+        }
+    }
+
+    private fun touchUp()
+    {
+        path!!.lineTo(mX, mY)
     }
 }
